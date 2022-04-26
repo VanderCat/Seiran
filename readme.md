@@ -1,5 +1,5 @@
-<h1 style="text-align: center;">Seiran<a href="https://en.touhouwiki.net/wiki/Seiran">*</a></h1>
-<p style="text-align: center;">Lightweight VK API library for Lua 5.4 named after Touhou character.</p>
+<h1 align="center">Seiran<a href="https://en.touhouwiki.net/wiki/Seiran">*</a></h1>
+<p align="center">Lightweight VK API library for Lua 5.4 named after Touhou character.</p>
 
 **NOTICE:** This library only tested on linux! 
 
