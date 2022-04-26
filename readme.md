@@ -2,6 +2,16 @@
 <p align="center">Lightweight VK API library for Lua 5.4 named after Touhou character.</p>
 
 **NOTICE:** This library only tested on linux! 
+## Table of Content
+- [Usage](#usage)
+- [Features](#features)
+- [Requirements](#requirements)
+- [TODO:](#todo)
+- [API](#api)
+    - [`seiran.api`](#seiranapigroupmethod)
+    - [`seiran:setJsonHandler`](#seiransetjsonhandlerencode-decode)
+    - [`seiran:longPollStart`](#seiranlongpollstart)
+    - [`seiran:longPollListen`](#seiranlongpolllisten)
 
 ## Usage
 ```lua
@@ -29,7 +39,7 @@ You will need to create an `accesstoken.vk` file contains your token though
 ## Features
 - Longpoll
 - No special API code
-    - there's actually no method like users.get, so if vk will want to rename something, you will only need to rename in code
+    - there's actually no method like users.get, so if vk will rename something, you will only need to rename same in code
 - lightweight
     - this library is only about 110 lines
 - You only use a token to do everything (_not like in some python vk api libraries_)
@@ -65,7 +75,7 @@ this is how you access the api
 #### Usage:
 ```lua
 local user = seiran.api.users.get{
-    user_ids=arg[1] or "vander_cat"
+    user_ids="vander_cat"
 }.response[1]
 
 print(user.first_name.." "..user.last_name)
@@ -74,7 +84,6 @@ print(user.first_name.." "..user.last_name)
 ### `seiran:setJsonHandler(encode, decode)`
 - function **`encode`** - Function used for encoding to json
 - function **`decode`** - Function used for decoding from json
-- **Returns**
 #### Descirpton:
 Use this function if you don't have `cJSON` installed or do not want to use it
 #### Usage:
@@ -98,7 +107,7 @@ seiran:longPollStart{
 
 ### `seiran:longPollListen{}`
 #### See: 
-https://dev.vk.com/method/messages.getLongPollServer
+https://dev.vk.com/api/user-long-poll/getting-started#%D0%9F%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D0%B5
 #### Usage:
 ```lua
 seiran:longPollStart()
