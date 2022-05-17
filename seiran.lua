@@ -49,7 +49,7 @@ function seiran:getResponse(name, args)
 end
 
 function seiran:longPollStart(arg)
-    self.longPollSettings = self.api.messages.getLongPollServer(arg).response
+    self.longPollSettings = self.api[(arg.group_id and "groups" or "messages")].getLongPollServer(arg).response
     self.longPollSettings.ts = math.tointeger(self.longPollSettings.ts)
 end
 
@@ -67,9 +67,9 @@ function seiran:longPollListen(arg)
         argString=argString..name.."="..value..'&'
     end
     --argString=urlencode.encode_url(argString)
-    local response
+    local response = ""
     curl.easy{
-        url = 'https://'..self.longPollSettings.server..'?'..argString,
+        url = (string.sub(self.longPollSettings.server, 1, 4)=="http" and "" or 'https://')..self.longPollSettings.server..'?'..argString,
         writefunction = function(a) response = response..a end -- use io.stderr:write()
       }
       :perform()
