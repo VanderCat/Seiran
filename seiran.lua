@@ -25,19 +25,19 @@ end
 
 function seiran:getResponse(name, args)
     local response = ""
-    local argString = ""
+    local form = curl.form()
     args = args or {}
     args.v = args.v or self.apiVersion
     args.access_token = args.access_token or self.accessToken
     for name, value in pairs(args) do
-        argString=argString..name.."="..value..'&'
+        form:add_content(name, value)
     end
     --argString=urlencode.encode_url(argString)
-    curl.easy{
-        url = 'https://api.vk.com/method/'..name..'?'..argString,
-        writefunction = function(a)response = a end -- use io.stderr:write()
-      }
-      :perform()
+    curl.easy()
+        :setopt_url('https://api.vk.com/method/'..name)
+        :setopt_writefunction(function(a)response = a end)
+        :setopt_httppost(form)
+        :perform()
     :close()
     local success, error = pcall(function()
         response = self.json.decode(response)
