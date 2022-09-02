@@ -1,0 +1,3 @@
+{
+    "Lua.runtime.version": "Lua 5.4" // i still need to make it backwards compatable to 5.1 but no jit magic
+}
