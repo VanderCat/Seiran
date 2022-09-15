@@ -1,51 +1,154 @@
-local curl = require "lcurl"
+local curl
 
 local seiran = {}
+
+seiran.VERSION = "2.0"
+
 seiran.json = {}
 seiran.apiVersion = "5.131"
+seiran.__boundary = "X-SEIRAN-BOUNDARY"
+
+function seiran:new(token) -- BREAKING CHANGE
+    local _seiran = {}
+    setmetatable(_seiran, self)
+    self.__index = self
+    _seiran.accessToken = token
+
+    _seiran.__metatables = {
+        endpoint = {},
+        group = {}
+    }
+    
+    _seiran.__metatables.endpoint.__metatable = "endpoint"
+    
+    _seiran.__metatables.group.__metatable = "group"
+    
+    function _seiran.__metatables.group:__index(key)
+        local table = {group = key}
+        setmetatable(table, _seiran.__metatables.endpoint)
+        return table
+    end
+    
+    _seiran.api = {}
+    setmetatable(_seiran.api, _seiran.__metatables.group)
+    function _seiran.__metatables.endpoint:__index(key)
+        local group = self.group
+        local point = key
+        return function(args)
+            local response = _seiran:getResponse(group..'.'..point, args)
+            if response.error then
+                local err = response.error
+                local string = string.format("Server responded with error %i:\n\t%s\n", err.error_code, err.error_msg)
+                for _, v in ipairs(err.request_params) do
+                    string = string.."\t\t"..v.key.."="..v.value.."\n"
+                end
+                error(string)
+            end
+            return response.response
+        end
+    end
+    return _seiran
+end
+
+function seiran:setJsonHandler(encode, decode)
+    self.json.decode = decode
+    self.json.encode = encode
+end
+
+--- cJSON Initialization
 local cjson = cjson
+
 if cjson == nil then
     local success, err = pcall(require, "cjson")
     if success then
-        function seiran.json.decode(str)
-            return err.decode(str)
-        end
-        function seiran.json.encode(obj)
-            return err.encode(obj)
-        end
+        seiran:setJsonHandler(err.encode, err.decode)
     else
         (warn or print)(err or "Error loading cjson")
     end
 end
 
-function seiran:setJsonHandler(encode, decode)
-    self.json.decode = decode
-    self.json.encode = decode
+function seiran:reader(handle)
+    local reader = {}
+    reader.handle = handle or io.tmpfile()
+    function reader:close()
+        self.handle:close()
+    end
+    function reader:write(ctx)
+        self.handle:write(ctx)
+    end
+    function reader:get()
+        local pos = self.handle:seek()
+        self.handle:seek("set")
+        local result = self.handle:read("*a")
+        self.handle:seek("set", pos)
+        return result
+    end
+    return reader
+end
+
+function seiran:encodeHeaders(data)
+    local str = {}
+    for k, v in pairs(data) do
+        str[#str+1]=k..": "..v
+    end
+    return str
+end
+
+function seiran:formData(name, data)
+    return string.format("--%s\n"..
+    'Content-Disposition: form-data; name="%s"\n'..
+    "\n"..
+    "%s\n", self.__boundary, name, data)
+end
+
+function seiran:formFile(name, data, contentType, filename)
+    contentType = contentType or "application/octet-stream"
+    filename = filename or "data.bin"
+    return string.format("--%s\n"..
+    'Content-Disposition: form-data; name="%s"; filename="%s"'..
+    "Content-Type: %s\n"..
+    "\n"..
+    "%s\n", self.__boundary, name, filename, contentType, data)
+end
+
+function seiran:post(url, data, headers)
+    curl = curl or require "lcurl" -- lcurl is a soft dependency now
+    local reader = self:reader()
+    local form = ""
+    curl.easy()
+        :setopt_url(url)
+        :setopt_writefunction(function (ctx)
+            reader:write(ctx)
+        end)
+        :setopt_httpheader(self:encodeHeaders(headers))
+        :setopt_postfields(data or "")
+        :perform()
+    :close()
+    return reader
 end
 
 function seiran:getResponse(name, args)
-    local response = ""
-    local form = curl.form()
     args = args or {}
     args.v = args.v or self.apiVersion
     args.access_token = args.access_token or self.accessToken
+    
+    local form = ""
     for name, value in pairs(args) do
-        form:add_content(name, value)
+        form=form..self:formData(name, value)
     end
-    --argString=urlencode.encode_url(argString)
-    curl.easy()
-        :setopt_url('https://api.vk.com/method/'..name)
-        :setopt_writefunction(function(a)response = response..a end)
-        :setopt_httppost(form)
-        :perform()
-    :close()
+    form=form.."--"..self.__boundary.."--"
+    local response = self:post('https://api.vk.com/method/'..name, form, {
+        ["Content-Type"]="multipart/form-data; boundary="..self.__boundary
+    })
+    local decoded = ""
     local success, error = pcall(function()
-        response = self.json.decode(response)
+        decoded = self.json.decode(response:get())
     end)
+    response:close()
     if not success then
         if warn then warn(error) else print(error) end
     end
-    return response
+    return decoded
 end
 
 function seiran:longPollStart(arg)
@@ -78,31 +181,5 @@ function seiran:longPollListen(arg)
     self.longPollSettings.ts = response.ts
     return response.updates
 end
-
-seiran.__metatables = {
-    endpoint = {},
-    group = {}
-}
-
-seiran.__metatables.endpoint.__metatable = "endpoint"
-
-function seiran.__metatables.endpoint:__index(key)
-    local group = self.group
-    local point = key
-    return function(args)
-        return seiran:getResponse(group..'.'..point, args)
-    end
-end
-
-seiran.__metatables.group.__metatable = "group"
-
-function seiran.__metatables.group:__index(key)
-    local table = {group = key}
-    setmetatable(table, seiran.__metatables.endpoint)
-    return table
-end
-
-seiran.api = {}
-setmetatable(seiran.api, seiran.__metatables.group)
 
 return seiran

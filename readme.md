@@ -3,31 +3,40 @@
 
 **NOTICE:** This library only tested on linux! 
 ## Table of Content
+- [Table of Content](#table-of-content)
 - [Usage](#usage)
 - [Features](#features)
 - [Requirements](#requirements)
 - [TODO:](#todo)
 - [API](#api)
-    - [`seiran.api`](#seiranapigroupmethod)
-    - [`seiran:setJsonHandler`](#seiransetjsonhandlerencode-decode)
-    - [`seiran:longPollStart`](#seiranlongpollstart)
-    - [`seiran:longPollListen`](#seiranlongpolllisten)
+  - [`seiran.api.<GROUP>.<METHOD>{..}`](#seiranapigroupmethod)
+    - [Descirpton:](#descirpton)
+    - [Usage:](#usage-1)
+  - [`seiran:setJsonHandler(encode, decode)`](#seiransetjsonhandlerencode-decode)
+    - [Descirpton:](#descirpton-1)
+    - [Usage:](#usage-2)
+  - [`seiran:longPollStart{...}`](#seiranlongpollstart)
+    - [See:](#see)
+    - [Usage:](#usage-3)
+  - [`seiran:longPollListen{}`](#seiranlongpolllisten)
+    - [See:](#see-1)
+    - [Usage:](#usage-4)
 
 ## Usage
 ```lua
-local vk = require "seiran"
+local VK = require "seiran"
 
 -- if using a file:
 local at = io.open("accesstoken.vk", "r")
-vk.accessToken = at:read()
+local vk1 = VK:new(at:read())
 at:close()
 
 -- Non-Secure way:
-vk.accessToken = "b19c3403c42a6d0d85d86efa1784be286ff6e6fc94c18e82c421b906cc33aeea"
+local vk2 = VK:new("VK.a.b19c3403c42a6d0d85d86efa1784be286ff6e6fc94c18e82c421b906cc33aeea")
 
 local user = vk.api.users.get{
     user_ids="vander_cat"
-}.response[1]
+}[1]
 print(user.first_name.." "..user.last_name)
 ```
 You can also execute the example:
@@ -46,8 +55,10 @@ You will need to create an `accesstoken.vk` file contains your token though
 
 ## Requirements
 ```
-Lua-cURLv3
+Lua-cURLv3*
 ```
+* You now can (!!!) write a new post function and dont use a Lua-cURLv3! just remake `seiran:post(url, data, headers)`!
+
 Optional:
 ```
 Lua-cJSON
@@ -61,10 +72,9 @@ seiran:setJsonHandler(json.encode, json.decode)
 ```
 
 ## TODO:
-- Don't force devs to use Lua-cURL
 - Add callback support
 - Login with credentials
-- Cleanup a code
+- Cleanup a code (?)
 - Test on other platforms
 
 ## API
