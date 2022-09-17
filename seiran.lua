@@ -2,7 +2,7 @@ local curl
 
 local seiran = {}
 
-seiran.VERSION = "2.0"
+seiran.VERSION = "2.0.1"
 
 seiran.json = {}
 seiran.apiVersion = "5.131"
@@ -134,7 +134,11 @@ function seiran:getResponse(name, args)
     
     local form = ""
     for name, value in pairs(args) do
-        form=form..self:formData(name, value)
+        local val
+        if type(value)=="table" then
+            val = self.json.encode(value)
+        end
+        form=form..self:formData(name, val or value)
     end
     form=form.."--"..self.__boundary.."--"
     local response = self:post('https://api.vk.com/method/'..name, form, {
