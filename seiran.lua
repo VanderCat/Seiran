@@ -152,7 +152,7 @@ function seiran:getResponse(name, args)
 end
 
 function seiran:longPollStart(arg)
-    self.longPollSettings = self.api[(arg.group_id and "groups" or "messages")].getLongPollServer(arg).response
+    self.longPollSettings = self.api[(arg.group_id and "groups" or "messages")].getLongPollServer(arg)
     self.longPollSettings.ts = math.tointeger(self.longPollSettings.ts)
 end
 
