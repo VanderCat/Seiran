@@ -1,5 +1,5 @@
 <h1 align="center">Seiran<a href="https://en.touhouwiki.net/wiki/Seiran">*</a></h1>
-<p align="center">Lightweight VK API library for Lua 5.4 named after Touhou character.</p>
+<p align="center">Lightweight VK API library for Lua 5.1+ named after Touhou character.</p>
 
 **NOTICE:** This library only tested on linux! 
 ## Table of Content
@@ -50,7 +50,7 @@ You will need to create an `accesstoken.vk` file contains your token though
 - No special API code
     - there's actually no method like users.get, so if vk will rename something, you will only need to rename same in code
 - lightweight
-    - this library is only about 110 lines
+    - this library is only about 200 lines
 - You only use a token to do everything (_not like in some python vk api libraries_)
 
 ## Requirements
