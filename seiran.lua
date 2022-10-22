@@ -2,7 +2,7 @@ local curl
 
 local seiran = {}
 
-seiran.VERSION = "2.0.1"
+seiran.VERSION = "2.0.2"
 
 seiran.json = {}
 seiran.apiVersion = "5.131"
@@ -95,20 +95,20 @@ function seiran:encodeHeaders(data)
 end
 
 function seiran:formData(name, data)
-    return string.format("--%s\n"..
-    'Content-Disposition: form-data; name="%s"\n'..
-    "\n"..
-    "%s\n", self.__boundary, name, data)
+    return string.format("--%s\r\n"..
+    'Content-Disposition: form-data; name="%s"\r\n'..
+    "\r\n"..
+    "%s\r\n", self.__boundary, name, data)
 end
 
 function seiran:formFile(name, data, contentType, filename)
     contentType = contentType or "application/octet-stream"
     filename = filename or "data.bin"
-    return string.format("--%s\n"..
-    'Content-Disposition: form-data; name="%s"; filename="%s"'..
-    "Content-Type: %s\n"..
-    "\n"..
-    "%s\n", self.__boundary, name, filename, contentType, data)
+    return string.format("--%s\r\n"..
+    'Content-Disposition: form-data; name="%s"; filename="%s"\r\n'..
+    "Content-Type: %s\r\n"..
+    "\r\n"..
+    "%s\r\n", self.__boundary, name, filename, contentType, data)
 end
 
 function seiran:post(url, data, headers)
@@ -140,7 +140,7 @@ function seiran:getResponse(name, args)
         end
         form=form..self:formData(name, val or value)
     end
-    form=form.."--"..self.__boundary.."--"
+    form=form.."--"..self.__boundary.."--\r\n"
     local response = self:post('https://api.vk.com/method/'..name, form, {
         ["Content-Type"]="multipart/form-data; boundary="..self.__boundary
     })
