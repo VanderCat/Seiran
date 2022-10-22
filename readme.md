@@ -34,7 +34,7 @@ at:close()
 -- Non-Secure way:
 local vk2 = VK:new("VK.a.b19c3403c42a6d0d85d86efa1784be286ff6e6fc94c18e82c421b906cc33aeea")
 
-local user = vk.api.users.get{
+local user = vk1.api.users.get{
     user_ids="vander_cat"
 }[1]
 print(user.first_name.." "..user.last_name)
@@ -57,7 +57,7 @@ You will need to create an `accesstoken.vk` file contains your token though
 ```
 Lua-cURLv3*
 ```
-* You now can (!!!) write a new post function and dont use a Lua-cURLv3! just remake `seiran:post(url, data, headers)`!
+* You now can (!!!) write a new post function and dont use a Lua-cURLv3! just redefine `seiran:post(url, data, headers)`!
 
 Optional:
 ```
@@ -110,7 +110,7 @@ https://dev.vk.com/method/messages.getLongPollServer
 ```lua
 seiran:longPollStart{
     need_pts = 1, --default
-    grou_id = 12345 -- Only for group's token
+    group_id = 12345 -- Only for group's token
     lp_version=3 --default
 }
 ```
